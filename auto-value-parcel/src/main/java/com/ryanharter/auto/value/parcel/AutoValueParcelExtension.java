@@ -8,29 +8,17 @@ import com.google.auto.service.AutoService;
 import com.google.auto.value.extension.AutoValueExtension;
 import com.google.common.base.CaseFormat;
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
-import com.squareup.javapoet.AnnotationSpec;
-import com.squareup.javapoet.ArrayTypeName;
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.CodeBlock;
-import com.squareup.javapoet.FieldSpec;
-import com.squareup.javapoet.JavaFile;
-import com.squareup.javapoet.MethodSpec;
-import com.squareup.javapoet.NameAllocator;
-import com.squareup.javapoet.ParameterSpec;
-import com.squareup.javapoet.ParameterizedTypeName;
-import com.squareup.javapoet.TypeName;
-import com.squareup.javapoet.TypeSpec;
-import com.squareup.javapoet.TypeVariableName;
+import com.google.common.collect.*;
+import com.squareup.javapoet.*;
 
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.annotation.processing.ProcessingEnvironment;
 import javax.lang.model.element.AnnotationMirror;
@@ -211,6 +199,8 @@ public final class AutoValueParcelExtension extends AutoValueExtension {
     ImmutableMap<TypeMirror, FieldSpec> typeAdapters = getTypeAdapters(properties);
 
     TypeName type = ClassName.get(context.packageName(), className);
+    List<? extends javax.lang.model.element.TypeParameterElement> params =  context.autoValueClass().getTypeParameters();
+    System.out.printf("Param: %s\n", params);
     TypeSpec.Builder subclass = TypeSpec.classBuilder(className)
         .addModifiers(FINAL)
         .addMethod(generateConstructor(properties))
@@ -230,7 +220,7 @@ public final class AutoValueParcelExtension extends AutoValueExtension {
       }
     }
 
-    subclass.addField(generateCreator(env, autoValueType, properties, type, typeAdapters));
+    subclass.addField(generateCreator(env, autoValueType, properties, type, typeAdapters, params, context));
 
     ClassName superClass = ClassName.get(context.packageName(), classToExtend);
     List<? extends TypeParameterElement> tpes = context.autoValueClass().getTypeParameters();
@@ -374,13 +364,46 @@ public final class AutoValueParcelExtension extends AutoValueExtension {
   }
 
   FieldSpec generateCreator(ProcessingEnvironment env, TypeName autoValueType,
-      List<Property> properties, TypeName type, Map<TypeMirror, FieldSpec> typeAdapters) {
+      List<Property> properties, TypeName type, Map<TypeMirror, FieldSpec> typeAdapters, List<? extends javax.lang.model.element.TypeParameterElement> parameterTypes, Context context) {
+
+    System.out.printf("Type type is: %s\n", type);
     ClassName creator = ClassName.bestGuess("android.os.Parcelable.Creator");
-    TypeName creatorOfClass = ParameterizedTypeName.get(creator, type);
+//    TypeParameterElement elements[]  = parameterTypes.toArray(new TypeParameterElement[0])
+//    Stream<TypeName> s1 = Stream.of(type);
+    TypeName elements[] = parameterTypes.stream().map(
+            param -> {
+              List<? extends TypeMirror> bounds = param.getBounds();
+              TypeMirror mirror0 = bounds.get(0);
+              TypeName typeName = TypeName.get(mirror0);
+              if (typeName.equals(ClassName.OBJECT)) {
+                return typeName;
+              }
+              System.out.printf("Bounds of '%s': '%s', of type: %s\n", param, bounds, typeName);
+              return WildcardTypeName.subtypeOf(typeName);
+//              return typeName;
+
+////              if (bounds.size() == 1) {
+//                return TypeName.OBJECT;
+////              }
+//              return WildcardTypeName.subtypeOf(TypeName.get(param.getBounds().get(0)));
+            }
+    ).toArray((size) -> new TypeName[size]);
+    TypeName objElements[] = parameterTypes.stream().map(
+            unused ->
+                TypeName.OBJECT
+
+    ).toArray((size) -> new TypeName[size]);
+    TypeName typeWithParameters = elements.length > 0 ? ParameterizedTypeName.get((ClassName) type, elements) : type;
+    TypeName typeWithObjParameters = elements.length > 0 ? ParameterizedTypeName.get((ClassName) type, objElements) : type;
+    TypeName creatorOfClass = ParameterizedTypeName.get(creator, typeWithParameters);
 
     Types typeUtils = env.getTypeUtils();
     CodeBlock.Builder ctorCall = CodeBlock.builder();
-    ctorCall.add("return new $T(\n", type);
+    if (elements.length > 0) {
+      ctorCall.add("return ($T) new $T(\n", typeWithParameters, type);
+    } else {
+      ctorCall.add("return new $T(\n", type);
+    }
     ctorCall.indent().indent();
     boolean requiresSuppressWarnings = false;
     for (int i = 0, n = properties.size(); i < n; i++) {
@@ -407,7 +430,7 @@ public final class AutoValueParcelExtension extends AutoValueExtension {
     }
     createFromParcel
         .addModifiers(PUBLIC)
-        .returns(type)
+        .returns(typeWithParameters)
         .addParameter(ClassName.bestGuess("android.os.Parcel"), "in");
     createFromParcel.addCode(ctorCall.build());
 
@@ -418,7 +441,7 @@ public final class AutoValueParcelExtension extends AutoValueExtension {
         .addMethod(MethodSpec.methodBuilder("newArray")
             .addAnnotation(Override.class)
             .addModifiers(PUBLIC)
-            .returns(ArrayTypeName.of(type))
+            .returns(ArrayTypeName.of(typeWithParameters))
             .addParameter(int.class, "size")
             .addStatement("return new $T[size]", type)
             .build())

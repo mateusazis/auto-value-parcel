@@ -164,75 +164,133 @@ public class AutoValueParcelExtensionTest {
 
   @Test public void simple() {
     JavaFileObject source = JavaFileObjects.forSourceString("test.Test", ""
-        + "package test;\n"
-        + "import android.os.Parcelable;\n"
-        + "import com.google.auto.value.AutoValue;\n"
-        + "@AutoValue public abstract class Test implements Parcelable {\n"
-        + "public abstract int a();\n"
-        + "@Nullable public abstract Double b();\n"
-        + "public abstract String c();\n"
-        + "public abstract long d();\n"
-        + "}"
+            + "package test;\n"
+            + "import android.os.Parcelable;\n"
+            + "import com.google.auto.value.AutoValue;\n"
+            + "@AutoValue public abstract class Test implements Parcelable {\n"
+            + "public abstract int a();\n"
+            + "@Nullable public abstract Double b();\n"
+            + "public abstract String c();\n"
+            + "public abstract long d();\n"
+            + "}"
     );
 
     JavaFileObject expected = JavaFileObjects.forSourceString("test/AutoValue_Test", ""
-        + "package test;\n" +
-        "\n" +
-        "import android.os.Parcel;\n" +
-        "import android.os.Parcelable;\n" +
-        "import java.lang.Double;\n" +
-        "import java.lang.Override;\n" +
-        "import java.lang.String;\n" +
-        "import javax.annotation.Generated;\n" +
-        "\n" +
-        "@Generated(\"com.ryanharter.auto.value.parcel.AutoValueParcelExtension\")" +
-        "final class AutoValue_Test extends $AutoValue_Test {\n" +
-        "  public static final Parcelable.Creator<AutoValue_Test> CREATOR = new Parcelable.Creator<AutoValue_Test>() {\n" +
-        "\n" +
-        "    @Override\n" +
-        "    public AutoValue_Test createFromParcel(Parcel in) {\n" +
-        "      return new AutoValue_Test(\n" +
-        "          in.readInt(),\n" +
-        "          in.readInt() == 0 ? in.readDouble() : null,\n" +
-        "          in.readString(),\n" +
-        "          in.readLong()\n" +
-        "      );\n" +
-        "    }\n" +
-        "    @Override\n" +
-        "    public AutoValue_Test[] newArray(int size) {\n" +
-        "      return new AutoValue_Test[size];\n" +
-        "    }\n" +
-        "  };\n" +
-        "\n" +
-        "  AutoValue_Test(int a, @Nullable Double b, String c, long d) {\n" +
-        "    super(a, b, c, d);\n" +
-        "  }\n" +
-        "\n" +
-        "  @Override\n" +
-        "  public void writeToParcel(Parcel dest, int flags) {\n" +
-        "    dest.writeInt(a());\n" +
-        "    if (b() == null) {\n" +
-        "      dest.writeInt(1);\n" +
-        "    } else {\n" +
-        "      dest.writeInt(0);\n" +
-        "      dest.writeDouble(b());\n" +
-        "    }\n" +
-        "    dest.writeString(c());\n" +
-        "    dest.writeLong(d());\n" +
-        "  }\n" +
-        "\n" +
-        "  @Override\n" +
-        "  public int describeContents() {\n" +
-        "    return 0;\n" +
-        "  }\n" +
-        "}");
+            + "package test;\n" +
+            "\n" +
+            "import android.os.Parcel;\n" +
+            "import android.os.Parcelable;\n" +
+            "import java.lang.Double;\n" +
+            "import java.lang.Override;\n" +
+            "import java.lang.String;\n" +
+            "import javax.annotation.processing.Generated;\n" +
+            "\n" +
+            "@Generated(\"com.ryanharter.auto.value.parcel.AutoValueParcelExtension\")" +
+            "final class AutoValue_Test extends $AutoValue_Test {\n" +
+            "  public static final Parcelable.Creator<AutoValue_Test> CREATOR = new Parcelable.Creator<AutoValue_Test>() {\n" +
+            "\n" +
+            "    @Override\n" +
+            "    public AutoValue_Test createFromParcel(Parcel in) {\n" +
+            "      return new AutoValue_Test(\n" +
+            "          in.readInt(),\n" +
+            "          in.readInt() == 0 ? in.readDouble() : null,\n" +
+            "          in.readString(),\n" +
+            "          in.readLong()\n" +
+            "      );\n" +
+            "    }\n" +
+            "    @Override\n" +
+            "    public AutoValue_Test[] newArray(int size) {\n" +
+            "      return new AutoValue_Test[size];\n" +
+            "    }\n" +
+            "  };\n" +
+            "\n" +
+            "  AutoValue_Test(int a, @Nullable Double b, String c, long d) {\n" +
+            "    super(a, b, c, d);\n" +
+            "  }\n" +
+            "\n" +
+            "  @Override\n" +
+            "  public void writeToParcel(Parcel dest, int flags) {\n" +
+            "    dest.writeInt(a());\n" +
+            "    if (b() == null) {\n" +
+            "      dest.writeInt(1);\n" +
+            "    } else {\n" +
+            "      dest.writeInt(0);\n" +
+            "      dest.writeDouble(b());\n" +
+            "    }\n" +
+            "    dest.writeString(c());\n" +
+            "    dest.writeLong(d());\n" +
+            "  }\n" +
+            "\n" +
+            "  @Override\n" +
+            "  public int describeContents() {\n" +
+            "    return 0;\n" +
+            "  }\n" +
+            "}");
 
     assertAbout(javaSources())
-        .that(Arrays.asList(parcel, parcelable, nullable, source))
-        .processedWith(new AutoValueProcessor(ImmutableList.of(new AutoValueParcelExtension())))
-        .compilesWithoutError()
-        .and()
-        .generatesSources(expected);
+            .that(Arrays.asList(parcel, parcelable, nullable, source))
+            .processedWith(new AutoValueProcessor(ImmutableList.of(new AutoValueParcelExtension())))
+            .compilesWithoutError()
+            .and()
+            .generatesSources(expected);
+  }
+
+  @Test public void simpleWithGenerics() {
+    JavaFileObject source = JavaFileObjects.forSourceString("test.Test", ""
+            + "package test;\n"
+            + "import android.os.Parcelable;\n"
+            + "import com.google.auto.value.AutoValue;\n"
+            + "@AutoValue public abstract class Test<T, U> implements Parcelable {\n"
+            + "public abstract int a();\n"
+            + "}"
+    );
+
+    JavaFileObject expected = JavaFileObjects.forSourceString("test/AutoValue_Test", ""
+            + "package test;\n" +
+            "\n" +
+            "import android.os.Parcel;\n" +
+            "import android.os.Parcelable;\n" +
+            "import java.lang.Object;\n" +
+            "import java.lang.Override;\n" +
+            "import javax.annotation.processing.Generated;\n" +
+            "\n" +
+            "@Generated(\"com.ryanharter.auto.value.parcel.AutoValueParcelExtension\")" +
+            "final class AutoValue_Test<T, U> extends $AutoValue_Test<T, U> {\n" +
+            "  public static final Parcelable.Creator<AutoValue_Test<Object, Object>> CREATOR = new Parcelable.Creator<AutoValue_Test<Object, Object>>() {\n" +
+            "\n" +
+            "    @Override\n" +
+            "    public AutoValue_Test<Object, Object> createFromParcel(Parcel in) {\n" +
+            "      return (AutoValue_Test<Object, Object>) new AutoValue_Test( \n" +
+            "          in.readInt()\n" +
+            "      );\n" +
+            "    }\n" +
+            "    @Override\n" +
+            "    public AutoValue_Test<Object, Object>[] newArray(int size) {\n" +
+            "      return new AutoValue_Test[size];\n" +
+            "    }\n" +
+            "  };\n" +
+            "\n" +
+            "  AutoValue_Test(int a) {\n" +
+            "    super(a);\n" +
+            "  }\n" +
+            "\n" +
+            "  @Override\n" +
+            "  public void writeToParcel(Parcel dest, int flags) {\n" +
+            "    dest.writeInt(a());\n" +
+            "  }\n" +
+            "\n" +
+            "  @Override\n" +
+            "  public int describeContents() {\n" +
+            "    return 0;\n" +
+            "  }\n" +
+            "}");
+
+    assertAbout(javaSources())
+            .that(Arrays.asList(parcel, parcelable, nullable, source))
+            .processedWith(new AutoValueProcessor(ImmutableList.of(new AutoValueParcelExtension())))
+            .compilesWithoutError()
+            .and()
+            .generatesSources(expected);
   }
 
   @Test public void nullableTypeAnnotation() {
@@ -252,7 +310,7 @@ public class AutoValueParcelExtensionTest {
         "import android.os.Parcelable;\n" +
         "import java.lang.Double;\n" +
         "import java.lang.Override;\n" +
-        "import javax.annotation.Generated;\n" +
+        "import javax.annotation.processing.Generated;\n" +
         "\n" +
         "@Generated(\"com.ryanharter.auto.value.parcel.AutoValueParcelExtension\")" +
         "final class AutoValue_Test extends $AutoValue_Test {\n" +
@@ -324,7 +382,7 @@ public class AutoValueParcelExtensionTest {
         "import android.os.Parcelable;\n" +
         "import java.lang.Override;\n" +
         "import java.lang.String;\n" +
-        "import javax.annotation.Generated;\n" +
+        "import javax.annotation.processing.Generated;\n" +
         "\n" +
         "@Generated(\"com.ryanharter.auto.value.parcel.AutoValueParcelExtension\")" +
         "final class AutoValue_Test extends $AutoValue_Test {\n" +
@@ -417,7 +475,7 @@ public class AutoValueParcelExtensionTest {
         "import android.os.Parcelable;\n" +
         "import java.lang.Override;\n" +
         "import java.lang.String;\n" +
-        "import javax.annotation.Generated;\n" +
+        "import javax.annotation.processing.Generated;\n" +
         "\n" +
         "@Generated(\"com.ryanharter.auto.value.parcel.AutoValueParcelExtension\")" +
         "final class AutoValue_No extends $AutoValue_No {\n" +
@@ -456,7 +514,7 @@ public class AutoValueParcelExtensionTest {
         "import android.os.Parcelable;\n" +
         "import java.lang.Override;\n" +
         "import java.lang.String;\n" +
-        "import javax.annotation.Generated;\n" +
+        "import javax.annotation.processing.Generated;\n" +
         "\n" +
         "@Generated(\"com.ryanharter.auto.value.parcel.AutoValueParcelExtension\")" +
         "final class AutoValue_Yes extends $AutoValue_Yes {\n" +
@@ -715,7 +773,7 @@ public class AutoValueParcelExtensionTest {
         "import java.lang.SuppressWarnings;\n" +
         "import java.util.List;\n" +
         "import java.util.Map;\n" +
-        "import javax.annotation.Generated;\n" +
+        "import javax.annotation.processing.Generated;\n" +
         "\n" +
         "@Generated(\"com.ryanharter.auto.value.parcel.AutoValueParcelExtension\")\n" +
         "final class AutoValue_Foo extends $AutoValue_Foo {\n" +
@@ -1049,7 +1107,7 @@ public class AutoValueParcelExtensionTest {
         "import java.lang.SuppressWarnings;\n" +
         "import java.util.List;\n" +
         "import java.util.Map;\n" +
-        "import javax.annotation.Generated;\n" +
+        "import javax.annotation.processing.Generated;\n" +
         "\n" +
         "@Generated(\"com.ryanharter.auto.value.parcel.AutoValueParcelExtension\")" +
         "final class AutoValue_Test extends $AutoValue_Test {\n" +
@@ -1181,7 +1239,7 @@ public class AutoValueParcelExtensionTest {
         + "import android.os.Parcel;\n"
         + "import android.os.Parcelable;\n"
         + "import java.lang.Override;\n"
-        + "import javax.annotation.Generated;\n"
+        + "import javax.annotation.processing.Generated;\n"
         + "\n"
         + "@Generated(\"com.ryanharter.auto.value.parcel.AutoValueParcelExtension\")"
         + "final class AutoValue_Foo extends $AutoValue_Foo {\n"
@@ -1246,7 +1304,7 @@ public class AutoValueParcelExtensionTest {
         + "import java.lang.String;\n"
         + "import java.lang.SuppressWarnings;\n"
         + "import java.util.List;\n"
-        + "import javax.annotation.Generated;\n"
+        + "import javax.annotation.processing.Generated;\n"
         + "\n"
         + "@Generated(\"com.ryanharter.auto.value.parcel.AutoValueParcelExtension\")"
         + "final class AutoValue_Foo extends $AutoValue_Foo {\n"
@@ -1361,7 +1419,7 @@ public class AutoValueParcelExtensionTest {
         + "import android.os.Parcel;\n"
         + "import android.os.Parcelable;\n"
         + "import java.lang.Override;\n"
-        + "import javax.annotation.Generated;\n"
+        + "import javax.annotation.processing.Generated;\n"
         + "\n"
         + "@Generated(\"com.ryanharter.auto.value.parcel.AutoValueParcelExtension\")"
         + "final class AutoValue_Foo extends $AutoValue_Foo {\n"
@@ -1453,7 +1511,7 @@ public class AutoValueParcelExtensionTest {
         + "import android.os.Parcel;\n"
         + "import android.os.Parcelable;\n"
         + "import java.lang.Override;\n"
-        + "import javax.annotation.Generated;\n"
+        + "import javax.annotation.processing.Generated;\n"
         + "\n"
         + "@Generated(\"com.ryanharter.auto.value.parcel.AutoValueParcelExtension\")"
         + "final class AutoValue_Foo extends $AutoValue_Foo {\n"
@@ -1531,7 +1589,7 @@ public class AutoValueParcelExtensionTest {
         + "import android.os.Parcel;\n"
         + "import android.os.Parcelable;\n"
         + "import java.lang.Override;\n"
-        + "import javax.annotation.Generated;\n"
+        + "import javax.annotation.processing.Generated;\n"
         + "\n"
         + "@Generated(\"com.ryanharter.auto.value.parcel.AutoValueParcelExtension\")"
         + "final class AutoValue_Foo extends $AutoValue_Foo {\n"
@@ -1591,7 +1649,7 @@ public class AutoValueParcelExtensionTest {
             "import java.lang.Override;\n" +
             "import java.lang.String;\n" +
             "import java.lang.SuppressWarnings;\n" +
-            "import javax.annotation.Generated;\n" +
+            "import javax.annotation.processing.Generated;\n" +
             "\n" +
             "@Generated(\"com.ryanharter.auto.value.parcel.AutoValueParcelExtension\")" +
             "final class AutoValue_Test extends $AutoValue_Test {\n" +
@@ -1652,7 +1710,7 @@ public class AutoValueParcelExtensionTest {
             "import java.lang.String;\n" +
             "import java.lang.SuppressWarnings;\n" +
             "import java.util.List;\n" +
-            "import javax.annotation.Generated;\n" +
+            "import javax.annotation.processing.Generated;\n" +
             "\n" +
             "@Generated(\"com.ryanharter.auto.value.parcel.AutoValueParcelExtension\")" +
             "final class AutoValue_Test extends $AutoValue_Test {\n" +
@@ -1712,7 +1770,7 @@ public class AutoValueParcelExtensionTest {
             "import java.lang.String;\n" +
             "import java.lang.SuppressWarnings;\n" +
             "import java.util.Map;\n" +
-            "import javax.annotation.Generated;\n" +
+            "import javax.annotation.processing.Generated;\n" +
             "\n" +
             "@Generated(\"com.ryanharter.auto.value.parcel.AutoValueParcelExtension\")" +
             "final class AutoValue_Test extends $AutoValue_Test {\n" +
@@ -1803,7 +1861,7 @@ public class AutoValueParcelExtensionTest {
             "import java.lang.CharSequence;\n" +
             "import java.lang.Override;\n" +
             "import java.lang.String;\n" +
-            "import javax.annotation.Generated;\n" +
+            "import javax.annotation.processing.Generated;\n" +
             "\n" +
             "@Generated(\"com.ryanharter.auto.value.parcel.AutoValueParcelExtension\")" +
             "final class AutoValue_Test extends $AutoValue_Test {\n" +
@@ -1895,19 +1953,19 @@ public class AutoValueParcelExtensionTest {
             "import android.os.Parcel;\n" +
             "import android.os.Parcelable;\n" +
             "import java.lang.Override;\n" +
-            "import javax.annotation.Generated;\n" +
+            "import javax.annotation.processing.Generated;\n" +
             "\n" +
             "@Generated(\"com.ryanharter.auto.value.parcel.AutoValueParcelExtension\")" +
             "final class AutoValue_Test<T extends Parcelable> extends $AutoValue_Test<T> {\n" +
-            "  public static final Parcelable.Creator<AutoValue_Test> CREATOR = new Parcelable.Creator<AutoValue_Test>() {\n" +
+            "  public static final Parcelable.Creator<AutoValue_Test<? extends Parcelable>> CREATOR = new Parcelable.Creator<AutoValue_Test<? extends Parcelable>>() {\n" +
             "    @Override\n" +
-            "    public AutoValue_Test createFromParcel(Parcel in) {\n" +
-            "      return new AutoValue_Test(\n" +
+            "    public AutoValue_Test<? extends Parcelable> createFromParcel(Parcel in) {\n" +
+            "      return (AutoValue_Test<? extends Parcelable>) new AutoValue_Test(\n" +
             "          in.readParcelable(Test.class.getClassLoader())\n" +
             "      );\n" +
             "    }\n" +
             "    @Override\n" +
-            "    public AutoValue_Test[] newArray(int size) {\n" +
+            "    public AutoValue_Test<? extends Parcelable>[] newArray(int size) {\n" +
             "      return new AutoValue_Test[size];\n" +
             "    }\n" +
             "  };\n" +
@@ -1956,21 +2014,21 @@ public class AutoValueParcelExtensionTest {
             "import java.lang.Integer;\n" +
             "import java.lang.Override;\n" +
             "import java.lang.String;\n" +
-            "import javax.annotation.Generated;\n" +
+            "import javax.annotation.processing.Generated;\n" +
             "\n" +
             "@Generated(\"com.ryanharter.auto.value.parcel.AutoValueParcelExtension\")" +
             "final class AutoValue_Test<T extends Parcelable> extends $AutoValue_Test<T> {\n" +
-            "  public static final Parcelable.Creator<AutoValue_Test> CREATOR = new Parcelable.Creator<AutoValue_Test>() {\n" +
+            "  public static final Parcelable.Creator<AutoValue_Test<? extends Parcelable>> CREATOR = new Parcelable.Creator<AutoValue_Test<? extends Parcelable>>() {\n" +
             "    @Override\n" +
-            "    public AutoValue_Test createFromParcel(Parcel in) {\n" +
-            "      return new AutoValue_Test(\n" +
+            "    public AutoValue_Test<? extends Parcelable> createFromParcel(Parcel in) {\n" +
+            "      return (AutoValue_Test<? extends Parcelable>) new AutoValue_Test(\n" +
             "          in.readParcelable(Test.class.getClassLoader()),\n" +
             "          in.readString(),\n" +
             "          in.readInt()\n" +
             "      );\n" +
             "    }\n" +
             "    @Override\n" +
-            "    public AutoValue_Test[] newArray(int size) {\n" +
+            "    public AutoValue_Test<? extends Parcelable>[] newArray(int size) {\n" +
             "      return new AutoValue_Test[size];\n" +
             "    }\n" +
             "  };\n" +
@@ -2021,21 +2079,21 @@ public class AutoValueParcelExtensionTest {
         "import java.lang.Integer;\n" +
         "import java.lang.Override;\n" +
         "import java.lang.String;\n" +
-        "import javax.annotation.Generated;\n" +
+        "import javax.annotation.processing.Generated;\n" +
         "\n" +
             "@Generated(\"com.ryanharter.auto.value.parcel.AutoValueParcelExtension\")" +
         "final class AutoValue_Test<T extends String> extends $AutoValue_Test<T> {\n" +
-        "  public static final Parcelable.Creator<AutoValue_Test> CREATOR = new Parcelable.Creator<AutoValue_Test>() {\n" +
+        "  public static final Parcelable.Creator<AutoValue_Test<? extends String>> CREATOR = new Parcelable.Creator<AutoValue_Test<? extends String>>() {\n" +
         "    @Override\n" +
-        "    public AutoValue_Test createFromParcel(Parcel in) {\n" +
-        "      return new AutoValue_Test(\n" +
+        "    public AutoValue_Test<? extends String> createFromParcel(Parcel in) {\n" +
+        "      return (AutoValue_Test<? extends String>) new AutoValue_Test(\n" +
         "          in.readString(),\n" +
         "          in.readString(),\n" +
         "          in.readInt()\n" +
         "      );\n" +
         "    }\n" +
         "    @Override\n" +
-        "    public AutoValue_Test[] newArray(int size) {\n" +
+        "    public AutoValue_Test<? extends String>[] newArray(int size) {\n" +
         "      return new AutoValue_Test[size];\n" +
         "    }\n" +
         "  };\n" +
@@ -2123,7 +2181,7 @@ public class AutoValueParcelExtensionTest {
         + "import android.os.Parcel;\n"
         + "import android.os.Parcelable;\n"
         + "import java.lang.Override;\n"
-        + "import javax.annotation.Generated;\n"
+        + "import javax.annotation.processing.Generated;\n"
         + "\n"
         + "@Generated(\"com.ryanharter.auto.value.parcel.AutoValueParcelExtension\")\n"
         + "final class AutoValue_PFoo extends $AutoValue_PFoo {\n"
@@ -2160,7 +2218,7 @@ public class AutoValueParcelExtensionTest {
         + "import android.os.Parcel;\n"
         + "import android.os.Parcelable;\n"
         + "import java.lang.Override;\n"
-        + "import javax.annotation.Generated;\n"
+        + "import javax.annotation.processing.Generated;\n"
         + "\n"
         + "@Generated(\"com.ryanharter.auto.value.parcel.AutoValueParcelExtension\")\n"
         + "final class AutoValue_PBar extends $AutoValue_PBar {\n"
