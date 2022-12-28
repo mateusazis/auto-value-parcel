@@ -2,14 +2,10 @@ package com.ryanharter.auto.value.parcel;
 
 import com.google.common.collect.ImmutableSet;
 import com.ryanharter.auto.value.parcel.AutoValueParcelExtension.Property;
-import com.squareup.javapoet.ArrayTypeName;
-import com.squareup.javapoet.ClassName;
-import com.squareup.javapoet.CodeBlock;
-import com.squareup.javapoet.FieldSpec;
-import com.squareup.javapoet.ParameterSpec;
-import com.squareup.javapoet.ParameterizedTypeName;
-import com.squareup.javapoet.TypeName;
-import com.squareup.javapoet.TypeVariableName;
+import com.squareup.javapoet.*;
+
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -182,9 +178,26 @@ final class Parcelables {
           ? ((TypeVariableName) property.type).bounds.get(0)
           : property.type;
       if (!check.equals(PARCELABLE)) {
-        block.add("($T) ", property.type);
+//        block.add("($T) ", ParameterizedTypeName.get(property.typeMirror, TypeName.OBJECT);
+
+        Object o = check;
+
+        if (property.type instanceof ParameterizedTypeName) {
+          ParameterizedTypeName param = (ParameterizedTypeName) property.type;
+          System.out.printf("Prop type: %s, mirror: %s, raw: %s\n", property.type, property.typeMirror,
+                  param.rawType);
+//        o = ParameterizedTypeName.get(param.rawType, WildcardTypeName.subtypeOf(ClassName.OBJECT));
+          o = ParameterizedTypeName.get(param.rawType, WildcardTypeName.subtypeOf(((TypeVariableName) param.typeArguments.get(0)).bounds.get(0)));
+//        o = ParameterizedTypeName.get(param.rawType, ((TypeVariableName) param.typeArguments.get(0)).bounds.get(0));
+          System.out.printf("Bounds: %s, Sub: %s\n", ((TypeVariableName) param.typeArguments.get(0)).bounds.get(0), o);
+        }
+//        o = param.rawType;
+//        o = property.type;
+//        o = ParameterizedTypeName.get(.rawType, ClassName.OBJECT);
+        block.add("($T) ", o);
       }
       block.add("in.readParcelable($T.class.getClassLoader())", autoValueType);
+//      block.add("in.readParcelable($T.class.getClassLoader())", ((ParameterizedTypeName)property.type).rawType);
     } else if (parcelableType.equals(CHARSEQUENCE)) {
       block.add("$T.CHAR_SEQUENCE_CREATOR.createFromParcel(in)", TEXTUTILS);
     } else if (isSubclassOf(IMMUTABLE_COLLECTION, typeUtils, property) || isSubclassOf(IMMUTABLE_MAP, typeUtils, property)) {

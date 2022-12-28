@@ -1994,6 +1994,67 @@ public class AutoValueParcelExtensionTest {
   }
 
   @Test
+  public void parameterizedInnerType() {
+    JavaFileObject source = JavaFileObjects.forSourceString("test.Test", ""
+            + "package test;\n"
+            + "import android.os.Parcelable;\n"
+            + "import com.google.auto.value.AutoValue;\n"
+            + "@AutoValue public abstract class Test<T extends String> implements Parcelable {\n"
+            + "interface Foo<T> extends Parcelable{}\n"
+            + "public abstract Foo<T> tea();\n"
+            + "}"
+    );
+
+    JavaFileObject expected = JavaFileObjects.forSourceString("test/AutoValue_Test", ""
+            + "package test;\n" +
+            "\n" +
+            "import android.os.Parcel;\n" +
+            "import android.os.Parcelable;\n" +
+            "import java.lang.Override;\n" +
+            "import java.lang.String;\n" +
+            "import java.lang.SuppressWarnings;\n"+
+            "import javax.annotation.processing.Generated;\n" +
+            "\n" +
+            "@Generated(\"com.ryanharter.auto.value.parcel.AutoValueParcelExtension\")" +
+            "final class AutoValue_Test<T extends String> extends $AutoValue_Test<T> {\n" +
+            "  public static final Parcelable.Creator<AutoValue_Test<? extends String>> CREATOR = new Parcelable.Creator<AutoValue_Test<? extends String>>() {\n" +
+            "    @Override\n" +
+            "    @SuppressWarnings(\"unchecked\")\n" +
+            "    public AutoValue_Test<? extends String> createFromParcel(Parcel in) {\n" +
+            "      return (AutoValue_Test<? extends String>) new AutoValue_Test(\n" +
+            "          (Test.Foo<? extends String>) in.readParcelable(Test.class.getClassLoader())\n" +
+            "      );\n" +
+            "    }\n" +
+            "    @Override\n" +
+            "    public AutoValue_Test<? extends String>[] newArray(int size) {\n" +
+            "      return new AutoValue_Test[size];\n" +
+            "    }\n" +
+            "  };\n" +
+            "\n" +
+            "  AutoValue_Test(Test.Foo<T> tea) {\n" +
+            "    super(tea);\n" +
+            "  }\n" +
+            "\n" +
+            "  @Override\n" +
+            "  public void writeToParcel(Parcel dest, int flags) {\n" +
+            "    dest.writeParcelable(tea(), flags);\n" +
+            "  }\n" +
+            "\n" +
+            "  @Override\n" +
+            "  public int describeContents() {\n" +
+            "    return 0;\n" +
+            "  }\n" +
+            "}");
+
+    assertAbout(javaSources())
+            .that(Arrays.asList(parcel, parcelable, source))
+            .processedWith(new AutoValueProcessor(ImmutableList.of(new AutoValueParcelExtension())))
+            .compilesWithoutError()
+            .and()
+            .generatesSources(expected);
+  }
+
+  @Test
   public void parameterizedTyp_withOtherFields() {
     JavaFileObject source = JavaFileObjects.forSourceString("test.Test", ""
             + "package test;\n"

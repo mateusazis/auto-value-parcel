@@ -240,6 +240,7 @@ public final class AutoValueParcelExtension extends AutoValueExtension {
     }
 
     JavaFile javaFile = JavaFile.builder(context.packageName(), subclass.build()).build();
+    System.out.printf("Java file: \n%s\n", javaFile);
     return javaFile.toString();
   }
 
@@ -432,6 +433,7 @@ public final class AutoValueParcelExtension extends AutoValueExtension {
         .addModifiers(PUBLIC)
         .returns(typeWithParameters)
         .addParameter(ClassName.bestGuess("android.os.Parcel"), "in");
+    System.out.printf("Constructor:\n%s\n", ctorCall.build());
     createFromParcel.addCode(ctorCall.build());
 
     TypeSpec creatorImpl = TypeSpec.anonymousClassBuilder("")
