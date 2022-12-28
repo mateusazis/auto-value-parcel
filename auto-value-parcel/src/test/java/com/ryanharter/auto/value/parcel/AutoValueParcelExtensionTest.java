@@ -1999,9 +1999,9 @@ public class AutoValueParcelExtensionTest {
             + "package test;\n"
             + "import android.os.Parcelable;\n"
             + "import com.google.auto.value.AutoValue;\n"
-            + "@AutoValue public abstract class Test<T extends String> implements Parcelable {\n"
-            + "interface Foo<T> extends Parcelable{}\n"
-            + "public abstract Foo<T> tea();\n"
+            + "@AutoValue public abstract class Test<T extends String, U extends System> implements Parcelable {\n"
+            + "interface Foo<T, U> extends Parcelable{}\n"
+            + "public abstract Foo<T, U> tea();\n"
             + "}"
     );
 
@@ -2013,25 +2013,26 @@ public class AutoValueParcelExtensionTest {
             "import java.lang.Override;\n" +
             "import java.lang.String;\n" +
             "import java.lang.SuppressWarnings;\n"+
+            "import java.lang.System;\n" +
             "import javax.annotation.processing.Generated;\n" +
             "\n" +
             "@Generated(\"com.ryanharter.auto.value.parcel.AutoValueParcelExtension\")" +
-            "final class AutoValue_Test<T extends String> extends $AutoValue_Test<T> {\n" +
-            "  public static final Parcelable.Creator<AutoValue_Test<? extends String>> CREATOR = new Parcelable.Creator<AutoValue_Test<? extends String>>() {\n" +
+            "final class AutoValue_Test<T extends String, U extends System> extends $AutoValue_Test<T, U> {\n" +
+            "  public static final Parcelable.Creator<AutoValue_Test<? extends String, ? extends System>> CREATOR = new Parcelable.Creator<AutoValue_Test<? extends String, ? extends System>>() {\n" +
             "    @Override\n" +
             "    @SuppressWarnings(\"unchecked\")\n" +
-            "    public AutoValue_Test<? extends String> createFromParcel(Parcel in) {\n" +
-            "      return (AutoValue_Test<? extends String>) new AutoValue_Test(\n" +
-            "          (Test.Foo<? extends String>) in.readParcelable(Test.class.getClassLoader())\n" +
+            "    public AutoValue_Test<? extends String, ? extends System> createFromParcel(Parcel in) {\n" +
+            "      return (AutoValue_Test<? extends String, ? extends System>) new AutoValue_Test(\n" +
+            "          (Test.Foo<? extends String, ? extends System>) in.readParcelable(Test.class.getClassLoader())\n" +
             "      );\n" +
             "    }\n" +
             "    @Override\n" +
-            "    public AutoValue_Test<? extends String>[] newArray(int size) {\n" +
+            "    public AutoValue_Test<? extends String, ? extends System>[] newArray(int size) {\n" +
             "      return new AutoValue_Test[size];\n" +
             "    }\n" +
             "  };\n" +
             "\n" +
-            "  AutoValue_Test(Test.Foo<T> tea) {\n" +
+            "  AutoValue_Test(Test.Foo<T, U> tea) {\n" +
             "    super(tea);\n" +
             "  }\n" +
             "\n" +

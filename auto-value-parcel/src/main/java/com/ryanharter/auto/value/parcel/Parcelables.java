@@ -187,8 +187,15 @@ final class Parcelables {
           System.out.printf("Prop type: %s, mirror: %s, raw: %s\n", property.type, property.typeMirror,
                   param.rawType);
 //        o = ParameterizedTypeName.get(param.rawType, WildcardTypeName.subtypeOf(ClassName.OBJECT));
-          o = ParameterizedTypeName.get(param.rawType, WildcardTypeName.subtypeOf(((TypeVariableName) param.typeArguments.get(0)).bounds.get(0)));
-//        o = ParameterizedTypeName.get(param.rawType, ((TypeVariableName) param.typeArguments.get(0)).bounds.get(0));
+          WildcardTypeName wildcardTypes[] = param.typeArguments.stream()
+                  .map(typeArgument -> {
+                    TypeName bound = ((TypeVariableName) typeArgument).bounds.get(0);
+                    return WildcardTypeName.subtypeOf(bound);
+                  }).toArray(size -> new WildcardTypeName[size]);
+
+          o = ParameterizedTypeName.get(param.rawType, wildcardTypes);
+//          o = ParameterizedTypeName.get(param.rawType, WildcardTypeName.subtypeOf(((TypeVariableName) param.typeArguments.get(0)).bounds.get(0)));
+///        o = ParameterizedTypeName.get(param.rawType, ((TypeVariableName) param.typeArguments.get(0)).bounds.get(0));
           System.out.printf("Bounds: %s, Sub: %s\n", ((TypeVariableName) param.typeArguments.get(0)).bounds.get(0), o);
         }
 //        o = param.rawType;
