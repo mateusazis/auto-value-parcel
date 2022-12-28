@@ -32,7 +32,7 @@ import org.junit.Test;
 import static com.google.common.truth.Truth.assertAbout;
 import static com.google.common.truth.Truth.assertThat;
 import static com.google.testing.compile.JavaSourcesSubjectFactory.javaSources;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.assertThrows;
 
 public class AutoValueParcelExtensionTest {
 
@@ -574,7 +574,7 @@ public class AutoValueParcelExtensionTest {
         .onLine(8);
   }
 
-  @Test public void failWhenCreatorAlreadyDefinedTest() throws Exception {
+  @Test public void failWhenCreatorAlreadyDefinedTest() {
     JavaFileObject source = JavaFileObjects.forSourceString("test.Test", ""
         + "package test;\n"
         + "import android.os.Parcel;\n"
@@ -1155,18 +1155,17 @@ public class AutoValueParcelExtensionTest {
         .generatesSources(expected);
   }
 
-  @Test public void throwsForNonParcelableProperty() throws Exception {
+  @Test public void throwsForNonParcelableProperty() {
     TypeElement type = elements.getTypeElement(SampleTypeWithNonSerializable.class.getCanonicalName());
     AutoValueExtension.Context context = createContext(type);
     processingEnvironment.setOption(AutoValueParcelExtension.FAIL_EXPLOSIVELY, "true");
 
-    try {
-      extension.generateClass(context, "Test_AnnotatedType", "SampleTypeWithNonSerializable", true);
-      fail();
-    } catch (AutoValueParcelException e) {}
+    assertThrows(AutoValueParcelException.class, () ->
+            extension.generateClass(context, "Test_AnnotatedType", "SampleTypeWithNonSerializable", true)
+    );
   }
 
-  @Test public void acceptsParcelableProperties() throws Exception {
+  @Test public void acceptsParcelableProperties() {
     TypeElement type = elements.getTypeElement(SampleTypeWithParcelable.class.getCanonicalName());
     AutoValueExtension.Context context = createContext(type);
 
@@ -1174,7 +1173,7 @@ public class AutoValueParcelExtensionTest {
     assertThat(generated).isNotNull();
   }
 
-  @Test public void throwsForInvalidMapType() throws Exception {
+  @Test public void throwsForInvalidMapType() {
     JavaFileObject source = JavaFileObjects.forSourceString("test.InvalidMap", ""
         + "package test;\n"
         + "import com.google.auto.value.AutoValue;\n"
@@ -1193,7 +1192,7 @@ public class AutoValueParcelExtensionTest {
             + " types for values.");
   }
 
-  @Test public void usesCustomParcelTypeAdapter() throws Exception {
+  @Test public void usesCustomParcelTypeAdapter() {
     JavaFileObject bar = JavaFileObjects.forSourceString("test.Bar", ""
         + "package test;\n"
         + "import java.util.Date;\n"
@@ -1284,7 +1283,7 @@ public class AutoValueParcelExtensionTest {
         .generatesSources(expected);
   }
 
-  @Test public void handlesNestedParameterizedTypes() throws Exception {
+  @Test public void handlesNestedParameterizedTypes() {
     JavaFileObject source = JavaFileObjects.forSourceString("test.Foo", ""
         + "package test;\n"
         + "import android.os.Parcelable;\n"
@@ -1348,7 +1347,7 @@ public class AutoValueParcelExtensionTest {
         .generatesSources(expected);
   }
 
-  @Test public void handlesNestedTypeAdaptersOfSameName() throws Exception {
+  @Test public void handlesNestedTypeAdaptersOfSameName() {
     JavaFileObject bar = JavaFileObjects.forSourceString("test.Bar", ""
         + "package test;\n"
         + "import java.util.Date;\n"
@@ -1465,7 +1464,7 @@ public class AutoValueParcelExtensionTest {
         .generatesSources(expected);
   }
 
-  @Test public void handlesNullableWithParcelTypeAdapter() throws Exception {
+  @Test public void handlesNullableWithParcelTypeAdapter() {
     JavaFileObject bar = JavaFileObjects.forSourceString("test.Bar", ""
         + "package test;\n"
         + "import java.util.Date;\n"
@@ -1561,7 +1560,7 @@ public class AutoValueParcelExtensionTest {
         .generatesSources(expected);
   }
 
-  @Test public void acceptsParcelableSubclassesTwiceRemoved() throws Exception {
+  @Test public void acceptsParcelableSubclassesTwiceRemoved() {
     JavaFileObject source1 = JavaFileObjects.forSourceString("test.SafeParcelable", ""
         + "package test;\n"
         + "import android.os.Parcelable;\n"

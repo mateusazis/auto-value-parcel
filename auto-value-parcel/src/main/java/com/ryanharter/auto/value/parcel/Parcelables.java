@@ -4,8 +4,6 @@ import com.google.common.collect.ImmutableSet;
 import com.ryanharter.auto.value.parcel.AutoValueParcelExtension.Property;
 import com.squareup.javapoet.*;
 
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -187,11 +185,11 @@ final class Parcelables {
           System.out.printf("Prop type: %s, mirror: %s, raw: %s\n", property.type, property.typeMirror,
                   param.rawType);
 //        o = ParameterizedTypeName.get(param.rawType, WildcardTypeName.subtypeOf(ClassName.OBJECT));
-          WildcardTypeName wildcardTypes[] = param.typeArguments.stream()
+          WildcardTypeName[] wildcardTypes = param.typeArguments.stream()
                   .map(typeArgument -> {
                     TypeName bound = ((TypeVariableName) typeArgument).bounds.get(0);
                     return WildcardTypeName.subtypeOf(bound);
-                  }).toArray(size -> new WildcardTypeName[size]);
+                  }).toArray(WildcardTypeName[]::new);
 
           o = ParameterizedTypeName.get(param.rawType, wildcardTypes);
 //          o = ParameterizedTypeName.get(param.rawType, WildcardTypeName.subtypeOf(((TypeVariableName) param.typeArguments.get(0)).bounds.get(0)));
