@@ -182,8 +182,6 @@ final class Parcelables {
 
         if (property.type instanceof ParameterizedTypeName) {
           ParameterizedTypeName param = (ParameterizedTypeName) property.type;
-          System.out.printf("Prop type: %s, mirror: %s, raw: %s\n", property.type, property.typeMirror,
-                  param.rawType);
 //        o = ParameterizedTypeName.get(param.rawType, WildcardTypeName.subtypeOf(ClassName.OBJECT));
           WildcardTypeName[] wildcardTypes = param.typeArguments.stream()
                   .map(typeArgument -> {
@@ -194,7 +192,6 @@ final class Parcelables {
           o = ParameterizedTypeName.get(param.rawType, wildcardTypes);
 //          o = ParameterizedTypeName.get(param.rawType, WildcardTypeName.subtypeOf(((TypeVariableName) param.typeArguments.get(0)).bounds.get(0)));
 ///        o = ParameterizedTypeName.get(param.rawType, ((TypeVariableName) param.typeArguments.get(0)).bounds.get(0));
-          System.out.printf("Bounds: %s, Sub: %s\n", ((TypeVariableName) param.typeArguments.get(0)).bounds.get(0), o);
         }
 //        o = param.rawType;
 //        o = property.type;
